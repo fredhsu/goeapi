@@ -23,7 +23,7 @@ type Request struct {
 
 type JsonRpcResponse struct {
 	Jsonrpc string        `json:"jsonrpc"`
-	Result  []interface{} `json:"result"`
+	Result  []map[string]interface{} `json:"result"`
 	Id      string        `json:"id"`
 }
 
@@ -89,6 +89,6 @@ func main() {
 	url := "http://admin:admin@192.168.56.101/command-api/"
 	jr := eapiCall(url, cmds)
 	fmt.Println("result: ", jr.Result)
-	sv := showVersion(jr.Result[0].(map[string]interface{}))
+	sv := showVersion(jr.Result[0])
 	fmt.Println("\nVersion: ", sv.Version)
 }
