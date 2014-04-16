@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+    "github.com/mitchellh/mapstructure"
 )
 
 type Parameters struct {
@@ -24,6 +25,7 @@ type Request struct {
 type JsonRpcResponse struct {
 	Jsonrpc string        `json:"jsonrpc"`
 	Result  []map[string]interface{} `json:"result"`
+    Error   map[string]interface{} `json:"error"`
 	Id      string        `json:"id"`
 }
 
@@ -39,6 +41,14 @@ type ShowVersion struct {
 	Architecture     string  `json:"architecture"`
 	InternalBuildId  string  `json:"internalBuildId"`
 	HardwareRevision string  `json:"hardwareRevision"`
+}
+
+type ShowInterfaces struct {
+    Interfaces  map[string]Interface  `json:"interfaces"`
+}
+
+type Interface struct {
+    Description string  `json:"description"`
 }
 
 func eapiCall(url string, cmds []string) JsonRpcResponse {
@@ -84,11 +94,35 @@ func showVersion(m map[string]interface{}) ShowVersion {
 	return sv
 }
 
+func showInterfaces(m map[string]interface{}) ShowInterfaces {
+    var si ShowInterfaces
+    si = ShowInterfaces{
+        Interfaces: m["interfaces"].(map[string]Interface),
+    }
+    return si
+}
+
+
 func main() {
 	cmds := []string{"show version", "show interfaces"}
 	url := "http://admin:admin@192.168.56.101/command-api/"
 	jr := eapiCall(url, cmds)
 	fmt.Println("result: ", jr.Result)
+    //sv := jr.Result[0].(ShowVersion)
 	sv := showVersion(jr.Result[0])
 	fmt.Println("\nVersion: ", sv.Version)
+    configCmds := []string{"enable", "configure", "interface ethernet 1", "descr go"}
+    jr = eapiCall(url, configCmds)
+	fmt.Println("result: ", jr.Result)
+	fmt.Println("error: ", jr.Error)
+    cmds = []string{"show interfaces ethernet 1"}
+    jr = eapiCall(url, cmds)
+    //si := showInterfaces(jr.Result[0])
+    var si ShowInterfaces
+    err := mapstructure.Decode(jr.Result[0], &si)
+    if err != nil {
+        panic(err)
+    }
+	fmt.Println("result: ", si) 
+	fmt.Println("result: ", si.Interfaces["Ethernet1"])
 }
