@@ -76,40 +76,15 @@ func decodeEapiResponse(resp *http.Response) JsonRpcResponse {
 	return v
 }
 
-func showVersion(m map[string]interface{}) ShowVersion {
-	var sv ShowVersion
-	sv = ShowVersion{
-		ModelName:        m["modelName"].(string),
-		InternalVersion:  m["internalVersion"].(string),
-		SystemMacAddress: m["systemMacAddress"].(string),
-		SerialNumber:     m["serialNumber"].(string),
-		MemTotal:         m["memTotal"].(float64),
-		BootupTimestap:   m["bootupTimestamp"].(float64),
-		MemFree:          m["memFree"].(float64),
-		Version:          m["version"].(string),
-		Architecture:     m["architecture"].(string),
-		InternalBuildId:  m["internalBuildId"].(string),
-		HardwareRevision: m["hardwareRevision"].(string),
-	}
-	return sv
-}
-
-func showInterfaces(m map[string]interface{}) ShowInterfaces {
-    var si ShowInterfaces
-    si = ShowInterfaces{
-        Interfaces: m["interfaces"].(map[string]Interface),
-    }
-    return si
-}
-
-
 func main() {
 	cmds := []string{"show version", "show interfaces"}
 	url := "http://admin:admin@192.168.56.101/command-api/"
 	jr := eapiCall(url, cmds)
-	fmt.Println("result: ", jr.Result)
-    //sv := jr.Result[0].(ShowVersion)
-	sv := showVersion(jr.Result[0])
+    var sv ShowVersion
+    err := mapstructure.Decode(jr.Result[0], &sv)
+    if err != nil {
+        panic(err)
+    }
 	fmt.Println("\nVersion: ", sv.Version)
     configCmds := []string{"enable", "configure", "interface ethernet 1", "descr go"}
     jr = eapiCall(url, configCmds)
@@ -117,12 +92,11 @@ func main() {
 	fmt.Println("error: ", jr.Error)
     cmds = []string{"show interfaces ethernet 1"}
     jr = eapiCall(url, cmds)
-    //si := showInterfaces(jr.Result[0])
     var si ShowInterfaces
-    err := mapstructure.Decode(jr.Result[0], &si)
+    err = mapstructure.Decode(jr.Result[0], &si)
     if err != nil {
         panic(err)
     }
 	fmt.Println("result: ", si) 
-	fmt.Println("result: ", si.Interfaces["Ethernet1"])
+	fmt.Println("result: ", si.Interfaces["Ethernet1"].Description)
 }
