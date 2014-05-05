@@ -1,11 +1,13 @@
-package main
+package eapi
 
 import (
 	"bytes"
+    "strings"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+    "crypto/tls"
     "github.com/mitchellh/mapstructure"
 )
 
@@ -51,17 +53,27 @@ type Interface struct {
     Description string  `json:"description"`
 }
 
-func eapiCall(url string, cmds []string) JsonRpcResponse {
+func Call(url string, cmds []string) JsonRpcResponse {
 	p := Parameters{1, cmds, "json"}
 	req := Request{"2.0", "runCmds", p, "1"}
 	buf, err := json.Marshal(req)
+    resp := new(http.Response)
 	if err != nil {
 		panic(err)
 	}
-	resp, err := http.Post(url, "application/json", bytes.NewReader(buf))
+    client := &http.Client{}
+    if strings.HasPrefix(url, "https") {
+        tr := &http.Transport {
+            TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+        }
+        client = &http.Client{Transport: tr}
+        //resp, err = client.Post(url, "application/json", bytes.NewReader(buf))
+    } 
+    resp, err = client.Post(url, "application/json", bytes.NewReader(buf))
 	defer resp.Body.Close()
 
 	if err != nil {
+        fmt.Println(err)
 		panic(err)
 	}
 	return decodeEapiResponse(resp)
@@ -79,19 +91,20 @@ func decodeEapiResponse(resp *http.Response) JsonRpcResponse {
 func main() {
 	cmds := []string{"show version", "show interfaces"}
 	url := "http://admin:admin@192.168.56.101/command-api/"
-	jr := eapiCall(url, cmds)
+	jr := Call(url, cmds)
     var sv ShowVersion
     err := mapstructure.Decode(jr.Result[0], &sv)
     if err != nil {
         panic(err)
     }
 	fmt.Println("\nVersion: ", sv.Version)
-    configCmds := []string{"enable", "configure", "interface ethernet 1", "descr go"}
-    jr = eapiCall(url, configCmds)
+    //configCmds := []string{"enable", "configure", "interface ethernet 1", "descr go"}
+    configCmds := []string{"enable", "configure", "aaa root secret arista"}
+    jr = Call(url, configCmds)
 	fmt.Println("result: ", jr.Result)
 	fmt.Println("error: ", jr.Error)
     cmds = []string{"show interfaces ethernet 1"}
-    jr = eapiCall(url, cmds)
+    jr = Call(url, cmds)
     var si ShowInterfaces
     err = mapstructure.Decode(jr.Result[0], &si)
     if err != nil {
