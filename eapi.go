@@ -90,7 +90,7 @@ func decodeEapiResponse(resp *http.Response) JsonRpcResponse {
 
 func main() {
 	cmds := []string{"show version", "show interfaces"}
-	url := "http://admin:admin@192.168.56.101/command-api/"
+	url := "http://admin:admin@172.22.28.156/command-api/"
 	jr := Call(url, cmds)
     var sv ShowVersion
     err := mapstructure.Decode(jr.Result[0], &sv)
