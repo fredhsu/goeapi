@@ -50,7 +50,30 @@ type ShowInterfaces struct {
 }
 
 type Interface struct {
-    Description string  `json:"description"`
+    Bandwidth   int
+    BurnedInAddress string
+    Description string  //`json:"description"`
+    ForwardingModel string
+    Hardware    string
+    //InterfaceAddress    []InterfaceAddressBase
+    //InterfaceCounters EthInterfaceCounters
+    InterfaceMembership string
+    InterfaceStatistics InterfaceStatistics
+    InterfaceStatus string
+    L2Mtu   int
+    LastStatusChangeTimestamp   float64
+    LineProtocolStatus  string
+    Mtu int
+    Name    string
+    PhysicalAddress string
+}
+
+type InterfaceStatistics struct {
+    InBitsRate float64
+    OutBitsRate float64
+    InPktsRate float64
+    UpdateInterval int
+    OutPktsRate float64
 }
 
 func Call(url string, cmds []string) JsonRpcResponse {
