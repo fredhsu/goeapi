@@ -9,7 +9,7 @@ import (
 func main() {
 	cmds := []string{"show version", "show interfaces"}
 	url := "https://admin:admin@dbrl3-leaf1/command-api/"
-	jr := eapi.Call(url, cmds)
+	jr := eapi.Call(url, cmds, "json")
 	var sv eapi.ShowVersion
 	err := mapstructure.Decode(jr.Result[0], &sv)
 	if err != nil {
@@ -18,11 +18,11 @@ func main() {
 	fmt.Println("\nVersion: ", sv.Version)
 	//configCmds := []string{"enable", "configure", "interface ethernet 1", "descr go"}
 	configCmds := []string{"enable", "configure", "aaa root secret arista"}
-	jr = eapi.Call(url, configCmds)
+	jr = eapi.Call(url, configCmds, "json")
 	fmt.Println("result: ", jr.Result)
 	fmt.Println("error: ", jr.Error)
 	cmds = []string{"show interfaces"}
-	jr = eapi.Call(url, cmds)
+	jr = eapi.Call(url, cmds, "json")
 	var si eapi.ShowInterfaces
 	err = mapstructure.Decode(jr.Result[0], &si)
 	if err != nil {
