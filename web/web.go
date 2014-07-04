@@ -25,7 +25,7 @@ func toJson(i eapi.ShowInterfaces) (s string) {
 	return
 }
 
-func myHandler(rw http.ResponseWriter, req *http.Request) {
+func showInterfacesHandler(rw http.ResponseWriter, req *http.Request) {
 	cmds := []string{"show interfaces"}
 	url := "https://admin:admin@dbrl3-leaf1/command-api/"
 	jr := eapi.Call(url, cmds, "json")
@@ -43,7 +43,8 @@ func myHandler(rw http.ResponseWriter, req *http.Request) {
 
 func main() {
 	// Create base path "/v1"
-	http.HandleFunc("/show/interfaces", myHandler)
+	http.HandleFunc("/show/interfaces", showInterfacesHandler)
+	// Create something that uses goroutines to go fetch multiple switch info
 	http.ListenAndServe(":8081", nil)
 	// Take in a post with the IP address of the switch
 }
