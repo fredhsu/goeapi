@@ -6,7 +6,13 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+// TODO: Create something to track a topology or bgp neighbor list
+// TODO: Create database of switches to be able to find info about a neighbor
+// TODO: Find a way to 'walk' down switches, maybe recursively
+// TODO: path tracer type functionality - may need to go down multiple paths using goroutines
+
 func main() {
+	// TODO: Extend this to use go routines to hit multiple switches at once
 	cmds := []string{"show version", "show interfaces"}
 	url := "https://admin:admin@dbrl3-leaf1/command-api/"
 	jr := eapi.Call(url, cmds, "json")
