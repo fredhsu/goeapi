@@ -34,6 +34,13 @@ func main() {
 
 	cmds = []string{"show ip route", "show ip bgp neighbors"}
 	jr = eapi.Call(url, cmds, "text")
-	fmt.Println(jr.Result[0]["output"])
-	fmt.Println(jr.Result[1]["output"])
+	//fmt.Println(jr.Result[0]["output"])
+	//fmt.Println(jr.Result[1]["output"])
+	out := fmt.Sprintf("%v", jr.Result[0]["output"])
+	routes := eapi.ParseShowIpRoute(out)
+	for _, route := range routes {
+		if len(route.NextHops) > 1 {
+			fmt.Printf(" %+v\n", route)
+		}
+	}
 }
