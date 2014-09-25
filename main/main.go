@@ -49,4 +49,7 @@ func main() {
 			fmt.Printf(" %+v\n", route)
 		}
 	}
+
+    cvx := eapi.Call(url, []string{"show network physical-topology hosts"}, "json")
+    fmt.Println(cvx.Result[0]["hosts"])
 }

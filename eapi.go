@@ -44,6 +44,21 @@ type ShowVersion struct {
 	HardwareRevision string  `json:"hardwareRevision"`
 }
 
+type ShowLldpNeighbors struct {
+    TablesDeletes   int
+    TablesAgeOuts   int
+    TablesDrops     int
+    TablesInserts   int
+    LldpNeighbors   []LldpNeighbor
+}
+
+type LldpNeighbor struct{
+    NeighborDevice  string
+    NeighborPort    string
+    Port            string
+    Ttl             int
+}
+
 //TODO: May need to replace Interface with a generic interface
 type ShowInterfaces struct {
 	Interfaces map[string]Interface `json:"interfaces"`
