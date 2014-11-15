@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+    "io/ioutil"
 )
 
 type Parameters struct {
@@ -45,11 +46,12 @@ type ShowVersion struct {
 }
 
 type ShowLldpNeighbors struct {
-    TablesDeletes   int
-    TablesAgeOuts   int
-    TablesDrops     int
-    TablesInserts   int
-    LldpNeighbors   []LldpNeighbor
+    TablesDeletes   int `json:"tablesDeletes"`
+    TablesAgeOuts   int `json:"tablesAgeOuts"`
+    TablesDrops     int `json:"tablesDrops"`
+    TablesInserts   int `json:"tablesInserts"`
+    TablesLastChangeTime   int `json:"tablesLastChangeTime"`
+    LldpNeighbors   []LldpNeighbor `json:"lldpNeighbors"`
 }
 
 type LldpNeighbor struct{
@@ -139,6 +141,41 @@ type InterfaceStatistics struct {
 	InPktsRate     float64
 	UpdateInterval int
 	OutPktsRate    float64
+}
+
+func call(url string, cmds []string, format string) *http.Response {
+   p := Parameters{1, cmds, format}
+    req := Request{"2.0", "runCmds", p, "1"}
+    buf, err := json.Marshal(req)
+    resp := new(http.Response)
+    if err != nil {
+        panic(err)
+    }
+    client := &http.Client{}
+    if strings.HasPrefix(url, "https") {
+        tr := &http.Transport{
+            TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+        }
+        client = &http.Client{Transport: tr}
+    }
+    resp, err = client.Post(url, "application/json", bytes.NewReader(buf))
+
+    if err != nil {
+        fmt.Println(err)
+        panic(err)
+    }
+    return resp
+}
+
+func RawCall(url string, cmds []string, format string) []byte {
+    resp := call(url, cmds, format)
+    defer resp.Body.Close()
+    body, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+        fmt.Println("Error calling")
+        fmt.Println(err)
+    }
+    return body
 }
 
 func Call(url string, cmds []string, format string) JsonRpcResponse {
