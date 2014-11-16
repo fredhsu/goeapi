@@ -49,4 +49,8 @@ func main() {
 			fmt.Printf(" %+v\n", route)
 		}
 	}
+    cvxcmds := []string{"show network physical-network"}
+    jr = eapi.Call(url, cvxcmds, "json")
+    fmt.Println(jr.Result[0])
+
 }
