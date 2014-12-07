@@ -61,6 +61,16 @@ type LldpNeighbor struct{
     Ttl             int
 }
 
+type ShowDirectFlowFlows struct {
+    Flows []Flow
+}
+
+type Flow struct {
+    Priority    int
+    MatchBytes  int
+    Name    string
+}
+
 //TODO: May need to replace Interface with a generic interface
 type ShowInterfaces struct {
 	Interfaces map[string]Interface `json:"interfaces"`
