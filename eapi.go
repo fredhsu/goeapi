@@ -24,6 +24,13 @@ type Request struct {
 	Id      string     `json:"id"`
 }
 
+type RawJsonRpcResponse struct {
+    Jsonrpc string                   `json:"jsonrpc"`
+    Result  []json.RawMessage        `json:"result"`
+    Error   map[string]interface{}   `json:"error"`
+    Id      string                   `json:"id"`
+}
+
 type JsonRpcResponse struct {
 	Jsonrpc string                   `json:"jsonrpc"`
 	Result  []map[string]interface{} `json:"result"`
