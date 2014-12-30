@@ -5,10 +5,10 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
-    "io/ioutil"
 )
 
 type Parameters struct {
@@ -25,10 +25,10 @@ type Request struct {
 }
 
 type RawJsonRpcResponse struct {
-    Jsonrpc string                   `json:"jsonrpc"`
-    Result  []json.RawMessage        `json:"result"`
-    Error   map[string]interface{}   `json:"error"`
-    Id      string                   `json:"id"`
+	Jsonrpc string                 `json:"jsonrpc"`
+	Result  []json.RawMessage      `json:"result"`
+	Error   map[string]interface{} `json:"error"`
+	Id      string                 `json:"id"`
 }
 
 type JsonRpcResponse struct {
@@ -53,29 +53,29 @@ type ShowVersion struct {
 }
 
 type ShowLldpNeighbors struct {
-    TablesDeletes   int `json:"tablesDeletes"`
-    TablesAgeOuts   int `json:"tablesAgeOuts"`
-    TablesDrops     int `json:"tablesDrops"`
-    TablesInserts   int `json:"tablesInserts"`
-    TablesLastChangeTime   int `json:"tablesLastChangeTime"`
-    LldpNeighbors   []LldpNeighbor `json:"lldpNeighbors"`
+	TablesDeletes        int            `json:"tablesDeletes"`
+	TablesAgeOuts        int            `json:"tablesAgeOuts"`
+	TablesDrops          int            `json:"tablesDrops"`
+	TablesInserts        int            `json:"tablesInserts"`
+	TablesLastChangeTime int            `json:"tablesLastChangeTime"`
+	LldpNeighbors        []LldpNeighbor `json:"lldpNeighbors"`
 }
 
-type LldpNeighbor struct{
-    NeighborDevice  string
-    NeighborPort    string
-    Port            string
-    Ttl             int
+type LldpNeighbor struct {
+	NeighborDevice string
+	NeighborPort   string
+	Port           string
+	Ttl            int
 }
 
 type ShowDirectFlowFlows struct {
-    Flows []Flow
+	Flows []Flow
 }
 
 type Flow struct {
-    Priority    int
-    MatchBytes  int
-    Name    string
+	Priority   int
+	MatchBytes int
+	Name       string
 }
 
 //TODO: May need to replace Interface with a generic interface
@@ -160,39 +160,51 @@ type InterfaceStatistics struct {
 	OutPktsRate    float64
 }
 
-func call(url string, cmds []string, format string) *http.Response {
-   p := Parameters{1, cmds, format}
-    req := Request{"2.0", "runCmds", p, "1"}
-    buf, err := json.Marshal(req)
-    resp := new(http.Response)
-    if err != nil {
-        panic(err)
-    }
-    client := &http.Client{}
-    if strings.HasPrefix(url, "https") {
-        tr := &http.Transport{
-            TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-        }
-        client = &http.Client{Transport: tr}
-    }
-    resp, err = client.Post(url, "application/json", bytes.NewReader(buf))
+type OpenstackNetworks struct {
+	Regions   map[string]OpenstackRegion
+	Neighbors interface{}
+	Hosts     interface{}
+}
 
-    if err != nil {
-        fmt.Println(err)
-        panic(err)
-    }
-    return resp
+type OpenstackRegion struct {
+	Tenants          interface{}
+	ServiceEndPoints interface{}
+	RegionName       string
+}
+
+func call(url string, cmds []string, format string) *http.Response {
+	p := Parameters{1, cmds, format}
+	req := Request{"2.0", "runCmds", p, "1"}
+	buf, err := json.Marshal(req)
+	resp := new(http.Response)
+	if err != nil {
+		panic(err)
+	}
+	client := &http.Client{}
+	if strings.HasPrefix(url, "https") {
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+		client = &http.Client{Transport: tr}
+	}
+	resp, err = client.Post(url, "application/json", bytes.NewReader(buf))
+
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+	return resp
 }
 
 func RawCall(url string, cmds []string, format string) []byte {
-    resp := call(url, cmds, format)
-    defer resp.Body.Close()
-    body, err := ioutil.ReadAll(resp.Body)
-    if err != nil {
-        fmt.Println("Error calling")
-        fmt.Println(err)
-    }
-    return body
+	resp := call(url, cmds, format)
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error calling")
+		fmt.Println(err)
+	}
+	return body
 }
 
 func Call(url string, cmds []string, format string) JsonRpcResponse {
