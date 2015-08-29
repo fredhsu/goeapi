@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/fredhsu/go-eapi"
+
+	"github.com/fredhsu/eapigo"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -50,6 +51,8 @@ func main() {
 		}
 	}
 
-    cvx := eapi.Call(url, []string{"show network physical-topology hosts"}, "json")
-    fmt.Println(cvx.Result[0]["hosts"])
+	cvx := eapi.Call(url, []string{"show network physical-topology hosts"}, "json")
+	fmt.Println(cvx.Result[0]["hosts"])
+	showInt := eapi.CallShowInterfaces(url, "")
+	fmt.Println(showInt)
 }
