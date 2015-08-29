@@ -166,6 +166,18 @@ type InterfaceStatistics struct {
 	OutPktsRate    float64
 }
 
+type OpenstackNetworks struct {
+	Regions   map[string]OpenstackRegion
+	Neighbors interface{}
+	Hosts     interface{}
+}
+
+type OpenstackRegion struct {
+	Tenants          interface{}
+	ServiceEndPoints interface{}
+	RegionName       string
+}
+
 func call(url string, cmds []string, format string) *http.Response {
 	p := Parameters{1, cmds, format}
 	req := Request{"2.0", "runCmds", p, "1"}
