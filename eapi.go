@@ -37,6 +37,7 @@ type JsonRpcResponse struct {
 	Error   map[string]interface{}   `json:"error"`
 	Id      string                   `json:"id"`
 }
+
 type ShowInterfacesResponse struct {
 	Jsonrpc string
 	Result  []ShowInterfaces
@@ -89,7 +90,34 @@ type ShowInterfaces struct {
 	Interfaces map[string]Interface `json:"interfaces"`
 }
 
-// TODO: Account for different interface types, this is specific to Eth
+type ShowVlanResponse struct {
+	Jsonrpc string
+	Result  []ShowVlan
+	Error   map[string]interface{}
+	Id      string
+}
+
+type ShowVlan struct {
+	SourceDetail string              `json:"sourceDetail"`
+	Vlans        map[string]VlanInfo `json:"vlans"`
+}
+
+type VlanInfo struct {
+	Status     string                    `json:"status"`
+	Name       string                    `json:"name"`
+	Interfaces map[string]InterfaceNames `json:"interfaces"`
+	Dynamic    bool                      `json:"dynamic"`
+}
+
+type InterfaceNames struct {
+	NameVlan map[string]VlanProperty
+}
+
+type VlanProperty struct {
+	Property map[string]bool `json:"privatePromoted"`
+}
+
+// todo: account for different interface types, this is specific to Eth
 type Interface struct {
 	Bandwidth                 int
 	BurnedInAddress           string
@@ -243,6 +271,17 @@ func CallShowInterfaces(url, intf string) ShowInterfacesResponse {
 	resp := call(url, cmds, "json")
 	dec := json.NewDecoder(resp.Body)
 	var v ShowInterfacesResponse
+	if err := dec.Decode(&v); err != nil {
+		log.Println(err)
+	}
+	return v
+}
+
+func CallShowVlan(url, intf string) ShowVlanResponse {
+	cmds := []string{"enable", "show vlan " + intf}
+	resp := call(url, cmds, "json")
+	dec := json.NewDecoder(resp.Body)
+	var v ShowVlanResponse
 	if err := dec.Decode(&v); err != nil {
 		log.Println(err)
 	}
