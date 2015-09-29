@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/fredhsu/eapigo"
+	"github.com/fredhsu/goeapi"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -16,14 +16,14 @@ func main() {
 	// TODO: Extend this to use go routines to hit multiple switches at once
 	cmds := []string{"show version", "show interfaces"}
 	url := "https://admin:admin@dbrl3-leaf1/command-api/"
-	jr := eapi.Call(url, cmds, "json")
-	var sv eapi.ShowVersion
+	jr := goeapi.Call(url, cmds, "json")
+	var sv goeapi.ShowVersion
 	err := mapstructure.Decode(jr.Result[0], &sv)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println("\nVersion: ", sv.Version)
-	var si eapi.ShowInterfaces
+	var si goeapi.ShowInterfaces
 	err = mapstructure.Decode(jr.Result[1], &si)
 	if err != nil {
 		panic(err)
@@ -36,23 +36,23 @@ func main() {
 	fmt.Printf("result: %+v \n", si.Interfaces["Ethernet10"].InterfaceCounters.OutErrorsDetail)
 	//configCmds := []string{"enable", "configure", "interface ethernet 1", "descr go"}
 	//configCmds := []string{"enable", "configure", "aaa root secret arista"}
-	//jr = eapi.Call(url, configCmds, "json")
+	//jr = goeapi.Call(url, configCmds, "json")
 	//fmt.Println("result: ", jr.Result)
 
 	cmds = []string{"show ip route", "show ip bgp neighbors"}
-	jr = eapi.Call(url, cmds, "text")
+	jr = goeapi.Call(url, cmds, "text")
 	//fmt.Println(jr.Result[0]["output"])
 	//fmt.Println(jr.Result[1]["output"])
 	out := fmt.Sprintf("%v", jr.Result[0]["output"])
-	routes := eapi.ParseShowIpRoute(out)
+	routes := goeapi.ParseShowIpRoute(out)
 	for _, route := range routes {
 		if len(route.NextHops) > 1 {
 			fmt.Printf(" %+v\n", route)
 		}
 	}
 
-	cvx := eapi.Call(url, []string{"show network physical-topology hosts"}, "json")
+	cvx := goeapi.Call(url, []string{"show network physical-topology hosts"}, "json")
 	fmt.Println(cvx.Result[0]["hosts"])
-	showInt := eapi.CallShowInterfaces(url, "")
+	showInt := goeapi.CallShowInterfaces(url, "")
 	fmt.Println(showInt)
 }
