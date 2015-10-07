@@ -4,12 +4,20 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
 )
+
+type EosNode struct {
+	Transport string
+	Username  string
+	Password  string
+	Hostname  string
+}
 
 type Parameters struct {
 	Version int      `json:"version"`
@@ -206,6 +214,10 @@ type OpenstackRegion struct {
 	RegionName       string
 }
 
+func (e *EosNode) CapiUrl() string {
+	return e.Transport + "://" + e.Username + ":" + e.Password + "@" + e.Hostname + "/command-api/"
+}
+
 func call(url string, cmds []string, format string) *http.Response {
 	p := Parameters{1, cmds, format}
 	req := Request{"2.0", "runCmds", p, "1"}
@@ -277,6 +289,34 @@ func CallShowInterfaces(url, intf string) ShowInterfacesResponse {
 	return v
 }
 
+func (e *EosNode) Call(cmds []string) (JsonRpcResponse, error) {
+	// added support for unix sockets!!
+	/*var url string
+	if unix_sockets == true {
+		url = "unix:/var/run/command-api.sock"
+	} else {
+		url = e.Transport + "://" + e.Username + ":" + e.Password + "@" + e.Hostname + "/command-api/"
+
+	}
+	*/
+	url := e.CapiUrl()
+
+	jr := Call(url, cmds, "json")
+	if jr.Result == nil {
+		return jr, errors.New("Error in JSON call")
+	}
+	return jr, nil
+}
+
+func (e *EosNode) ShowInterfaces(intf string) (ShowInterfacesResponse, error) {
+	url := e.CapiUrl()
+	jr := CallShowInterfaces(url, intf)
+	if jr.Error != nil {
+		return jr, fmt.Errorf("Error ShowInterfaces %s", jr.Error)
+	}
+	return jr, nil
+}
+
 func CallShowVlan(url, intf string) ShowVlanResponse {
 	cmds := []string{"enable", "show vlan " + intf}
 	resp := call(url, cmds, "json")
@@ -286,6 +326,15 @@ func CallShowVlan(url, intf string) ShowVlanResponse {
 		log.Println(err)
 	}
 	return v
+}
+
+func (e *EosNode) ShowVlan(intf string) (ShowVlanResponse, error) {
+	url := e.CapiUrl()
+	jr := CallShowVlan(url, intf)
+	if jr.Error != nil {
+		return jr, fmt.Errorf("Error ShowVlan %s", jr.Error)
+	}
+	return jr, nil
 }
 
 func decodeEapiResponse(resp *http.Response) JsonRpcResponse {
