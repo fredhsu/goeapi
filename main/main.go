@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/fredhsu/goeapi"
 	"github.com/mitchellh/mapstructure"
@@ -55,4 +56,13 @@ func main() {
 	fmt.Println(cvx.Result[0]["hosts"])
 	showInt := goeapi.CallShowInterfaces(url, "")
 	fmt.Println(showInt)
+	e := goeapi.EosNode{"https",
+		"fredlhsu",
+		"arista",
+		"172.28.170.27"}
+	l, err := e.ShowLldpNeighbors()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(l)
 }

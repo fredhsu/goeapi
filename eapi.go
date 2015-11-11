@@ -60,6 +60,13 @@ type ShowInterfacesResponse struct {
 	Id      string
 }
 
+type ShowLldpNeighborsResponse struct {
+	Jsonrpc string
+	Result  []ShowLldpNeighbors
+	Error   map[string]interface{}
+	Id      string
+}
+
 type ShowVersion struct {
 	ModelName        string  `json:"modelName"`
 	InternalVersion  string  `json:"internalVersion"`
@@ -348,15 +355,19 @@ func CallShowLldpNeighbors(url string) ShowLldpNeighbors {
 	cmds := []string{"enable", "show lldp neighbors"}
 	resp := call(url, cmds, "json")
 	dec := json.NewDecoder(resp.Body)
-	var v JsonRpcResponseInterface
-	if err := dec.Decode(&v); err != nil {
+	//var j JsonRpcResponseInterface
+	var ln ShowLldpNeighborsResponse
+	if err := dec.Decode(&ln); err != nil {
 		log.Println(err)
 	}
 	// Error handle here for bad response
-	if v.Error != nil {
-		log.Println(v.Error)
+	if ln.Error != nil {
+		log.Println(ln.Error)
 	}
-	return v.Result[0].(ShowLldpNeighbors)
+	//sl := j.Result[1]
+	//fmt.Println(sl)
+	//return sl.(ShowLldpNeighbors)
+	return ln.Result[1]
 }
 
 func (e *EosNode) ShowLldpNeighbors() (ShowLldpNeighbors, error) {
