@@ -46,6 +46,13 @@ type JsonRpcResponse struct {
 	Id      string                   `json:"id"`
 }
 
+type JsonRpcResponseInterface struct {
+	Jsonrpc string                 `json:"jsonrpc"`
+	Result  []interface{}          `json:"result"`
+	Error   map[string]interface{} `json:"error"`
+	Id      string                 `json:"id"`
+}
+
 type ShowInterfacesResponse struct {
 	Jsonrpc string
 	Result  []ShowInterfaces
@@ -334,6 +341,27 @@ func (e *EosNode) ShowVlan(intf string) (ShowVlanResponse, error) {
 	if jr.Error != nil {
 		return jr, fmt.Errorf("Error ShowVlan %s", jr.Error)
 	}
+	return jr, nil
+}
+
+func CallShowLldpNeighbors(url string) ShowLldpNeighbors {
+	cmds := []string{"enable", "show lldp neighbors"}
+	resp := call(url, cmds, "json")
+	dec := json.NewDecoder(resp.Body)
+	var v JsonRpcResponseInterface
+	if err := dec.Decode(&v); err != nil {
+		log.Println(err)
+	}
+	// Error handle here for bad response
+	if v.Error != nil {
+		log.Println(v.Error)
+	}
+	return v.Result[0].(ShowLldpNeighbors)
+}
+
+func (e *EosNode) ShowLldpNeighbors() (ShowLldpNeighbors, error) {
+	url := e.CapiUrl()
+	jr := CallShowLldpNeighbors(url)
 	return jr, nil
 }
 
