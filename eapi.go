@@ -86,7 +86,7 @@ type ShowLldpNeighbors struct {
 	TablesAgeOuts        int            `json:"tablesAgeOuts"`
 	TablesDrops          int            `json:"tablesDrops"`
 	TablesInserts        int            `json:"tablesInserts"`
-	TablesLastChangeTime int            `json:"tablesLastChangeTime"`
+	TablesLastChangeTime float64            `json:"tablesLastChangeTime"`
 	LldpNeighbors        []LldpNeighbor `json:"lldpNeighbors"`
 }
 
